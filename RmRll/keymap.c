@@ -140,7 +140,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 else         { d_down = false; socd_press(KC_D, false); if (a_down) socd_press(KC_A, true); }
                 return false;
 
-            case KC_W:
+           case KC_W:
                 if (pressed) { w_down = true; if (s_down) socd_press(KC_S, false); socd_press(KC_W, true); }
                 else         { w_down = false; socd_press(KC_W, false); if (s_down) socd_press(KC_S, true); }
                 return false;
