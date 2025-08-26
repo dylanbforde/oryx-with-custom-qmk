@@ -125,70 +125,65 @@ bool rgb_matrix_indicators_user(void) {
 }
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
-  bool pressed = record -> event.pressed;
+    bool pressed = record->event.pressed;
 
-  if (get_highest_layer(layer_state) == 3) {
+    // --- Snap Tap (last-pressed wins) ONLY on layer 3 ("Gaming 3") ---
+    if (get_highest_layer(layer_state) == 3) {  // or == _GAMING3 if you use a layer enum
+        switch (keycode) {
+            case KC_A:
+                if (pressed) { a_down = true; if (d_down) socd_press(KC_D, false); socd_press(KC_A, true); }
+                else         { a_down = false; socd_press(KC_A, false); if (d_down) socd_press(KC_D, true); }
+                return false;
+
+            case KC_D:
+                if (pressed) { d_down = true; if (a_down) socd_press(KC_A, false); socd_press(KC_D, true); }
+                else         { d_down = false; socd_press(KC_D, false); if (a_down) socd_press(KC_A, true); }
+                return false;
+
+            case KC_W:
+                if (pressed) { w_down = true; if (s_down) socd_press(KC_S, false); socd_press(KC_W, true); }
+                else         { w_down = false; socd_press(KC_W, false); if (s_down) socd_press(KC_S, true); }
+                return false;
+
+            case KC_S:
+                if (pressed) { s_down = true; if (w_down) socd_press(KC_W, false); socd_press(KC_S, true); }
+                else         { s_down = false; socd_press(KC_S, false); if (w_down) socd_press(KC_W, true); }
+                return false;
+        }
+        // IMPORTANT: do NOT return here; let other keys fall through.
+    }
+
+    // --- Your custom dual-function keys (tap/hold, no layer switching) ---
     switch (keycode) {
-      switch (keycode) {
-        case KC_A:
-                if (pressed) { a_down = true; if (d_down) socd_press(KC_D,false); socd_press(KC_A,true); }
-                else         { a_down = false; socd_press(KC_A,false); if (d_down) socd_press(KC_D,true); }
-                return false;
-        case KC_D:
-                if (pressed) { d_down = true; if (a_down) socd_press(KC_A,false); socd_press(KC_D,true); }
-                else         { d_down = false; socd_press(KC_D,false); if (a_down) socd_press(KC_A,true); }
-                return false;
-        case KC_W:
-                if (pressed) { w_down = true; if (s_down) socd_press(KC_S,false); socd_press(KC_W,true); }
-                else         { w_down = false; socd_press(KC_W,false); if (s_down) socd_press(KC_S,true); }
-                return false;
-        case KC_S:
-                if (pressed) { s_down = true; if (w_down) socd_press(KC_W,false); socd_press(KC_S,true); }
-                else         { s_down = false; socd_press(KC_S,false); if (w_down) socd_press(KC_W,true); }
-                return false;
-      }
+        case DUAL_ESC_TILD:
+            if (record->tap.count > 0) {
+                // TAP = Esc
+                if (pressed) register_code16(KC_ESC);
+                else         unregister_code16(KC_ESC);
+            } else {
+                // HOLD = ~
+                if (pressed) register_code16(KC_TILD);
+                else         unregister_code16(KC_TILD);
+            }
+            return false;
+
+        case DUAL_TAB_CAPS:
+            if (record->tap.count > 0) {
+                // TAP = Tab
+                if (pressed) register_code16(KC_TAB);
+                else         unregister_code16(KC_TAB);
+            } else {
+                // HOLD = Caps
+                if (pressed) register_code16(KC_CAPS);
+                else         unregister_code16(KC_CAPS);
+            }
+            return false;
+
+        case RGB_SLD:
+            if (pressed) { rgblight_mode(1); }
+            return false;
     }
 
     return true;
-  }
-  
-  switch (keycode) {
-
-    case DUAL_FUNC_0:
-      if (record->tap.count > 0) {
-        if (record->event.pressed) {
-          register_code16(KC_ESCAPE);
-        } else {
-          unregister_code16(KC_ESCAPE);
-        }
-      } else {
-        if (record->event.pressed) {
-          register_code16(KC_TILD);
-        } else {
-          unregister_code16(KC_TILD);
-        }  
-      }  
-      return false;
-    case DUAL_FUNC_1:
-      if (record->tap.count > 0) {
-        if (record->event.pressed) {
-          register_code16(KC_TAB);
-        } else {
-          unregister_code16(KC_TAB);
-        }
-      } else {
-        if (record->event.pressed) {
-          register_code16(KC_CAPS);
-        } else {
-          unregister_code16(KC_CAPS);
-        }  
-      }  
-      return false;
-    case RGB_SLD:
-      if (record->event.pressed) {
-        rgblight_mode(1);
-      }
-      return false;
-  }
-  return true;
 }
+
