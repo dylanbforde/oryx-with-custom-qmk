@@ -128,8 +128,8 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     bool pressed = record->event.pressed;
 
     // --- Snap Tap (last-pressed wins) ONLY on layer 3 ("Gaming 3") ---
-    if (get_highest_layer(layer_state) == 3) {  // or == _GAMING3 if you use a layer enum
-        switch (keycode) {
+    if (get_highest_layer(layer_state) == 3) {
+      switch (keycode) {
             case KC_A:
                 if (pressed) { a_down = true; if (d_down) socd_press(KC_D, false); socd_press(KC_A, true); }
                 else         { a_down = false; socd_press(KC_A, false); if (d_down) socd_press(KC_D, true); }
@@ -153,7 +153,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         // IMPORTANT: do NOT return here; let other keys fall through.
     }
 
-    // --- Your custom dual-function keys (tap/hold, no layer switching) ---
+    // custom dual-function keys (tap/hold, no layer switching) ---
     switch (keycode) {
         case DUAL_ESC_TILD:
             if (record->tap.count > 0) {
