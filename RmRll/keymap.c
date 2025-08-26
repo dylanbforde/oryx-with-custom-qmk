@@ -7,17 +7,21 @@
 
 enum custom_keycodes {
   RGB_SLD = ZSA_SAFE_RANGE,
+  DUAL_ESC_TILD,
+  DUAL_TAB_CAPS,
 };
 
+static bool w_down = false, a_down = false, s_down = false, d_down = false;
 
-
-#define DUAL_FUNC_0 LT(3, KC_F3)
-#define DUAL_FUNC_1 LT(3, KC_F15)
+static void socd_press(uint16_t keycode, bool pressed) {
+  if (pressed) register_code(keycode);
+  else unregister_code(keycode);
+}
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_voyager(
-    DUAL_FUNC_0,    KC_1,           KC_2,           KC_3,           KC_4,           KC_5,                                           KC_6,           KC_7,           KC_8,           KC_9,           KC_0,           TO(3),          
-    DUAL_FUNC_1,    KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,                                           KC_Y,           KC_U,           KC_I,           KC_O,           KC_P,           KC_PIPE,        
+    DUAL_ESC_TILD,    KC_1,           KC_2,           KC_3,           KC_4,           KC_5,                                           KC_6,           KC_7,           KC_8,           KC_9,           KC_0,           TO(3),          
+    DUAL_TAB_CAPS,    KC_Q,           KC_W,           KC_E,           KC_R,           KC_T,                                           KC_Y,           KC_U,           KC_I,           KC_O,           KC_P,           KC_PIPE,        
     KC_LEFT_SHIFT,  KC_A,           KC_S,           KC_D,           KC_F,           KC_G,                                           KC_H,           KC_J,           KC_K,           KC_L,           KC_SCLN,        MT(MOD_RSFT, KC_QUOTE),
     KC_LEFT_CTRL,   KC_Z,           KC_X,           KC_C,           KC_V,           KC_B,                                           KC_N,           KC_M,           KC_COMMA,       KC_DOT,         MT(MOD_RALT, KC_SLASH),KC_LEFT_GUI,    
                                                     LT(1, KC_ENTER),KC_TAB,                                         KC_BSPC,        LT(2, KC_SPACE)
@@ -120,11 +124,34 @@ bool rgb_matrix_indicators_user(void) {
   return true;
 }
 
-
-
-
-
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+  bool pressed = record -> event.pressed;
+
+  if (get_highest_layer(layer_state) == 3) {
+    switch (keycode) {
+      switch (keycode) {
+        case KC_A:
+                if (pressed) { a_down = true; if (d_down) socd_press(KC_D,false); socd_press(KC_A,true); }
+                else         { a_down = false; socd_press(KC_A,false); if (d_down) socd_press(KC_D,true); }
+                return false;
+        case KC_D:
+                if (pressed) { d_down = true; if (a_down) socd_press(KC_A,false); socd_press(KC_D,true); }
+                else         { d_down = false; socd_press(KC_D,false); if (a_down) socd_press(KC_A,true); }
+                return false;
+        case KC_W:
+                if (pressed) { w_down = true; if (s_down) socd_press(KC_S,false); socd_press(KC_W,true); }
+                else         { w_down = false; socd_press(KC_W,false); if (s_down) socd_press(KC_S,true); }
+                return false;
+        case KC_S:
+                if (pressed) { s_down = true; if (w_down) socd_press(KC_W,false); socd_press(KC_S,true); }
+                else         { s_down = false; socd_press(KC_S,false); if (w_down) socd_press(KC_W,true); }
+                return false;
+      }
+    }
+
+    return true;
+  }
+  
   switch (keycode) {
 
     case DUAL_FUNC_0:
